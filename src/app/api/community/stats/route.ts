@@ -5,9 +5,6 @@ import InterviewModel from "@/models/interviewModel";
 import BlogModel from "@/models/blogModel";
 import RoadmapModel from "@/models/roadmapModel";
 
-// Connect to the database
-connect();
-
 // Cache for 5 minutes
 let cachedStats: any = null;
 let lastCacheTime = 0;
@@ -15,6 +12,9 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 export async function GET() {
   try {
+    // Ensure database connection
+    await connect();
+    
     // Check if we have cached data that's still valid
     const now = Date.now();
     if (cachedStats && (now - lastCacheTime) < CACHE_DURATION) {

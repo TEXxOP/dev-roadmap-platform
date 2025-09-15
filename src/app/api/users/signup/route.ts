@@ -4,10 +4,11 @@ import User from "@/models/userModel";
 import bcryptjs from "bcryptjs"
 import {NextResponse,NextRequest} from 'next/server'
 
-connect();
-
 export async function POST(request:NextRequest){
     try {
+        // Ensure database connection
+        await connect();
+        
         const reqBody = await request.json();
         const {username: rawUsername, email: rawEmail, password} = reqBody;
         

@@ -8,16 +8,24 @@ export async function connect() {
         }
 
         // Check if already connected
-        if (mongoose.connections[0].readyState) {
+        if (mongoose.connections[0].readyState === 1) {
             console.log("Already connected to MongoDB");
-            return;
+            return mongoose.connections[0];
+        }
+
+        // Disconnect if in a connecting state
+        if (mongoose.connections[0].readyState === 2) {
+            await mongoose.disconnect();
         }
 
         console.log(`Connecting to MongoDB Atlas...`);
         
-        // Connect to MongoDB with optimized settings for production
+        // Connect to MongoDB with optimized settings for serverless
         await mongoose.connect(process.env.MONGO_URI, {
-            bufferCommands: false,
+            bufferCommands: true,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+            family: 4
         });
 
         const connection = mongoose.connection;
