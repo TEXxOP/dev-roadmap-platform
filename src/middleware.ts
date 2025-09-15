@@ -4,8 +4,16 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // Skip middleware for static files and API routes
-  if (path.startsWith('/_next') || path.startsWith('/api') || path.includes('.')) {
+  // Skip middleware for static files, API routes, and Next.js internals
+  if (
+    path.startsWith('/_next') || 
+    path.startsWith('/api') || 
+    path.startsWith('/static') ||
+    path.includes('.') ||
+    path === '/favicon.ico' ||
+    path === '/robots.txt' ||
+    path === '/sitemap.xml'
+  ) {
     return NextResponse.next();
   }
 
@@ -28,23 +36,13 @@ export function middleware(request: NextRequest) {
   // Simple token presence check (we'll let the API validate the token properly)
   const hasToken = Boolean(token && token.length > 10);
 
-  // Debug logging (remove in production)
-  console.log('Middleware Debug:', {
-    path,
-    isInterviewRoute,
-    hasToken,
-    tokenLength: token?.length || 0
-  });
-
   // Redirect logged-in users away from auth pages
   if ((isPublicPath || isLoginRequired) && hasToken) {
-    console.log('Redirecting authenticated user away from auth page');
     return NextResponse.redirect(new URL('/', request.url));
   }
 
   // Block interview routes for users without tokens
   if (isInterviewRoute && !hasToken) {
-    console.log('Redirecting unauthenticated user to login-required for path:', path);
     return NextResponse.redirect(new URL('/auth/login-required', request.url));
   }
 
@@ -59,8 +57,9 @@ export const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - favicon.ico, robots.txt, sitemap.xml (static files)
+     * - files with extensions (images, css, js, etc.)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.).*)',
   ],
 };
